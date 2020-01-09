@@ -1,3 +1,4 @@
+import play.sbt.routes.RoutesKeys
 import sbt.Resolver
 
 scalaVersion     := "2.13.0"
@@ -16,3 +17,5 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 name := "SynopticProject"
 
 routesGenerator := InjectedRoutesGenerator
+
+RoutesKeys.routesImport += "models.PersonId"

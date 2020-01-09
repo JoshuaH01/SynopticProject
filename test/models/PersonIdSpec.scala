@@ -1,6 +1,6 @@
 package models
 
-import models.Card.pathBindable
+import models.PersonId.pathBindable
 import org.scalatest.{MustMatchers, OptionValues, WordSpec}
 import play.api.libs.json.Json
 
@@ -21,7 +21,7 @@ class PersonIdSpec extends WordSpec with OptionValues with MustMatchers {
 
     }
     "Serialise" in {
-      val expectedPersonId = Card(
+      val expectedPersonId = PersonId(
         _id = validPersonId
       )
       val json = Json.obj(
@@ -31,8 +31,8 @@ class PersonIdSpec extends WordSpec with OptionValues with MustMatchers {
     }
     "return 'Invalid person id' if _id does not match regex" in {
 
-      val invalidPersonId = "!awefwf46346463"
-      val result = "Invalid person id"
+      val invalidPersonId = "!dssuhciehf7833"
+      val result = "Invalid person Id"
 
       pathBindable.bind("", invalidPersonId) mustBe Left(result)
 

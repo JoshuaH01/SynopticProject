@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models
+package requests
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 

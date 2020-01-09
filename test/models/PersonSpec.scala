@@ -18,7 +18,7 @@ class PersonSpec extends WordSpec with OptionValues with MustMatchers {
       )
 
       val expectedPerson = Person(
-        _id = card,
+        _id = id,
         name = "Fred",
         email = "a@b.com",
         mobileNumber = "07444345"
@@ -29,7 +29,7 @@ class PersonSpec extends WordSpec with OptionValues with MustMatchers {
     }
     "Serialize correctly" in {
       val person = Person(
-        _id = card,
+        _id = id,
         name = "Fred",
         email = "a@b.com",
         mobileNumber = "07444345"

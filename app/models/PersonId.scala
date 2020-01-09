@@ -11,16 +11,16 @@ object PersonId {
   implicit val writes: OWrites[PersonId] = (__ \ "_id").write[String].contramap(_._id)
 
   implicit val pathBindable: PathBindable[PersonId] = {
-    new PathBindable[Card] {
+    new PathBindable[PersonId] {
       override def bind(key: String, value: String): Either[String, PersonId] = {
         if (value.matches("^[a-zA-Z0-9]+$")) {
-          Right(Card(value))
+          Right(PersonId(value))
         } else {
-          Left("Invalid Person Id")
+          Left("Invalid person Id")
         }
       }
 
-      override def unbind(key: String, value: Card): String = {
+      override def unbind(key: String, value: PersonId): String = {
         value._id
       }
     }

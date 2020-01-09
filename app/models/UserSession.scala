@@ -4,7 +4,7 @@ package models
 import java.time.LocalDateTime
 
 import play.api.libs.json._
-import repositories.MongoDateTimeFormats
+import requests.MongoDateTimeFormats
 
 case class UserSession(_id: String, lastUpdated: LocalDateTime)
 

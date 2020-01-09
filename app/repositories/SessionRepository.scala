@@ -1,7 +1,7 @@
-package controllers.repositories
+package repositories
 
 import javax.inject.Inject
-import models.{Card, UserSession}
+import models.{PersonId, UserSession}
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -14,7 +14,7 @@ import reactivemongo.play.json.collection.{JSONCollection, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SessionRepository @Inject()(mongo: ReactiveMongoApi, config: Configuration,
-                                  memberRepository: MemberRepository)(implicit ec: ExecutionContext) {
+                                  personRepository: PersonRepository)(implicit ec: ExecutionContext) {
 
   private val sessionCollection: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("session"))
@@ -37,14 +37,14 @@ class SessionRepository @Inject()(mongo: ReactiveMongoApi, config: Configuration
 
   }
 
-  def getSession(_id: Card): Future[Option[UserSession]] = {
+  def getSession(_id: PersonId): Future[Option[UserSession]] = {
     sessionCollection.flatMap(_.find(
       Json.obj("_id" -> _id._id),
       None
     ).one[UserSession])
   }
 
-  def deleteSessionById(_id: Card): Future[WriteResult] = {
+  def deleteSessionById(_id: PersonId): Future[WriteResult] = {
     sessionCollection.flatMap(
       _.delete.one(Json.obj("_id" -> _id._id))
     )

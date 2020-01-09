@@ -1,8 +1,8 @@
 
-package controllers.repositories
+package repositories
 
 import javax.inject.Inject
-import models.{Card, Members}
+import models.{Person, PersonId}
 import play.api.Configuration
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -15,12 +15,12 @@ import reactivemongo.play.json.collection.{JSONCollection, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class MemberRepository @Inject()(cc: ControllerComponents,
+class PersonRepository @Inject()(cc: ControllerComponents,
                                  config: Configuration,
                                  mongo: ReactiveMongoApi)
                                 (implicit ec: ExecutionContext) extends AbstractController(cc) {
 
-  private val memberCollection: Future[JSONCollection] = {
+  private val personCollection: Future[JSONCollection] = {
     mongo.database.map(_.collection[JSONCollection]("people"))
   }
 
@@ -42,23 +42,23 @@ class MemberRepository @Inject()(cc: ControllerComponents,
   }
 
   //GET
-  def getMemberById(_id: Card): Future[Option[Members]] = {
-    memberCollection.flatMap(_.find(
+  def getPersonById(_id: PersonId): Future[Option[Person]] = {
+    personCollection.flatMap(_.find(
       Json.obj("_id" -> _id._id),
       None
-    ).one[Members])
+    ).one[Person])
   }
 
   //PUT
-  def addNewMember(newMember: Members): Future[WriteResult] = {
-    memberCollection.flatMap(
+  def addNewPerson(newMember: Person): Future[WriteResult] = {
+    personCollection.flatMap(
       _.insert.one(newMember)
     )
   }
 
   //DELETE
-  def deleteMemberById(_id: Card): Future[Option[JsObject]] = {
-    memberCollection.flatMap(
+  def deletePersonById(_id: PersonId): Future[Option[JsObject]] = {
+    personCollection.flatMap(
       _.findAndRemove(Json.obj("_id" -> _id._id), None, None, WriteConcern.Default, None, None, Seq.empty).map(
         _.value
       )
@@ -66,12 +66,12 @@ class MemberRepository @Inject()(cc: ControllerComponents,
   }
 
   //UPDATE
-  def updateName(_id: Card, newData: String): Future[Option[Members]] = {
-    memberCollection.flatMap {
+  def updateName(_id: PersonId, newData: String): Future[Option[Person]] = {
+    personCollection.flatMap {
       result =>
         val selector: JsObject = Json.obj("_id" -> _id._id)
         val modifier: JsObject = Json.obj("$set" -> Json.obj("name" -> newData))
-        findAndUpdate(result, selector, modifier).map(_.result[Members])
+        findAndUpdate(result, selector, modifier).map(_.result[Person])
     }
   }
 }
