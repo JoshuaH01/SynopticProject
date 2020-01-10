@@ -1,0 +1,10 @@
+# Routes
+
+GET   /present/:_id                       controllers.CrudController.present(_id: PersonId)
+GET   /get-person/:_id                     controllers.CrudController.getId(_id: PersonId)
+POST  /add-new-person                      controllers.CrudController.addNewPerson
+
+GET   /get-name/:_id                    controllers.CrudController.getName(_id: PersonId)
+POST  /delete-person/:_id               controllers.CrudController.deletePerson(_id: PersonId)
+POST  /update-name/:_id/:newData        controllers.CrudController.updateName(_id: PersonId,newData:String)
+

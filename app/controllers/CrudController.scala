@@ -38,7 +38,7 @@ class CrudController @Inject()(cc: ControllerComponents,
         case None => Future.successful(BadRequest("Please register"))
       } recoverWith {
         case _: JsResultException =>
-          Future.successful(BadRequest(s"Could not parse Json to Members model. Incorrect data!"))
+          Future.successful(BadRequest(s"Could not parse Json to Person model. Incorrect data!"))
         case e =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
       }
@@ -63,7 +63,7 @@ class CrudController @Inject()(cc: ControllerComponents,
     implicit request: Request[AnyContent] =>
       personRepository.getPersonById(_id).map {
         case Some(person) => Ok(Json.toJson(person.name))
-        case None => NotFound("Member not found!")
+        case None => NotFound("Person not found!")
       } recoverWith {
         case _: JsResultException =>
           Future.successful(BadRequest(s"Could not parse Json to Persons model. Incorrect data!"))
@@ -75,10 +75,10 @@ class CrudController @Inject()(cc: ControllerComponents,
   def addNewPerson: Action[JsValue] = Action.async(parse.json) {
     implicit request =>
       (for {
-        member <- Future.fromTry(Try {
+        person <- Future.fromTry(Try {
           request.body.as[Person]
         })
-        result <- personRepository.addNewPerson(member)
+        result <- personRepository.addNewPerson(person)
       } yield Ok("Success")).recoverWith {
         case e: JsResultException =>
           Future.successful(BadRequest(s"Could not parse Json to Person model. Incorrect data!"))
@@ -93,7 +93,7 @@ class CrudController @Inject()(cc: ControllerComponents,
     implicit request =>
       personRepository.deletePersonById(_id).map {
         case Some(_) => Ok("Success")
-        case _ => NotFound("Member not found")
+        case _ => NotFound("Person not found")
       } recoverWith {
         case e =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
@@ -108,7 +108,7 @@ class CrudController @Inject()(cc: ControllerComponents,
         case Some(person) =>
           Ok(s"Success! updated Person with id ${person._id._id}'s name to $newData")
         case _ =>
-          NotFound("No Member with that id exists in records")
+          NotFound("No Person with that id exists in records")
       } recoverWith {
         case exception =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $exception"))

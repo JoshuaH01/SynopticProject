@@ -50,9 +50,9 @@ class PersonRepository @Inject()(cc: ControllerComponents,
   }
 
   //PUT
-  def addNewPerson(newMember: Person): Future[WriteResult] = {
+  def addNewPerson(newPerson: Person): Future[WriteResult] = {
     personCollection.flatMap(
-      _.insert.one(newMember)
+      _.insert.one(newPerson)
     )
   }
 
