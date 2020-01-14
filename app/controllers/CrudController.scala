@@ -133,14 +133,14 @@ class CrudController @Inject()(cc: ControllerComponents,
     bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
       case Some(_) =>
         increase match {
-          case x if x <= 0 => Future.successful(BadRequest("Minimum increase must be greater than zero"))
+          case x if x <= 0 => Future.successful(BadRequest("Balance increase must be greater than zero"))
           case _ =>
             bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
               case Some(_) => bowsEmployeeRepository.increaseBalance(id, increase)
-                .map { _ => Ok(s"Document updated!") }
+                .map { _ => Ok(s"Balance updated!") }
             }
         }
-      case None => Future.successful(NotFound("No Employee with that id exists in records"))
+      case None => Future.successful(NotFound("No employee with that id exists in records"))
     } recoverWith {
       case _ => Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
       case e => Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
@@ -152,20 +152,20 @@ class CrudController @Inject()(cc: ControllerComponents,
     bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
       case Some(employee) => {
         decrease match {
-          case x if x <= 0 => Future.successful(BadRequest("Minimum increase must be greater than zero"))
+          case x if x <= 0 => Future.successful(BadRequest("Balance increase must be greater than zero"))
           case x if x > employee.balance => Future.successful(BadRequest("Decrease cannot be greater than current balance"))
           case _ =>
             bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
               case Some(employee) =>
                 bowsEmployeeRepository.decreaseBalance(id, decrease).map {
-                  case Some(_) => Ok("Document updated!")
+                  case Some(_) => Ok("Balance updated!")
                   case None => NotFound("Employee not found")
                 }
             }
         }
 
       }
-      case None => Future.successful(NotFound("No Employee with that id exists in records"))
+      case None => Future.successful(NotFound("No employee with that id exists in records"))
 
     }.recoverWith {
       case _ => Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))

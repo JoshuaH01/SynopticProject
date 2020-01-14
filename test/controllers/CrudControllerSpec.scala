@@ -374,4 +374,114 @@ class CrudControllerSpec extends WordSpec with MustMatchers
       app.stop
     }
   }
+
+  "increaseBalance" must {
+    "return 'success if valid data is input" in {
+
+      when(mockEmployeeRespository.increaseBalance(any, any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+      val app: Application = builder.build()
+
+      val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 301).url)
+
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe 200
+      contentAsString(result) mustBe "Balance updated!"
+
+      app.stop
+    }
+
+    "return correct error message if negative increase data is input" in {
+
+      val app: Application = builder.build()
+
+      val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), -301).url)
+
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe BAD_REQUEST
+      contentAsString(result) mustBe "Balance increase must be greater than zero"
+
+      app.stop
+    }
+
+    "return correct error message and status if member not found" in {
+
+      when(mockEmployeeRespository.getBowsEmployeeById(EmployeeId("testEmployeeId")))
+        .thenReturn(Future.successful(None))
+
+      val app: Application = builder.build()
+
+      val request =
+        FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 234).url)
+      val result: Future[Result] = route(app, request).value
+
+      contentAsString(result) mustBe "No employee with that id exists in records"
+
+      app.stop
+    }
+  }
+  "decreaseBalance" must {
+
+    "return 'success if valid data is input" in {
+
+      when(mockEmployeeRespository.decreaseBalance(any, any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+      when(mockEmployeeRespository.getBowsEmployeeById(any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 100))))
+
+
+      val app: Application = builder.build()
+
+      val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 100).url)
+
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe 200
+      contentAsString(result) mustBe "Balance updated!"
+
+      app.stop
+    }
+
+    "return correct error message if decrease is higher than balance data is input" in {
+
+      when(mockEmployeeRespository.getBowsEmployeeById(any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+      when(mockEmployeeRespository.decreaseBalance(any, any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+      val app: Application = builder.build()
+
+      val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
+
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe BAD_REQUEST
+      contentAsString(result) mustBe "Decrease cannot be greater than current balance"
+
+      app.stop
+    }
+
+    "return correct error message and status if member not found" in {
+      when(mockEmployeeRespository.getBowsEmployeeById(any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 234))))
+
+      when(mockEmployeeRespository.getBowsEmployeeById(EmployeeId("testEmployeeId")))
+        .thenReturn(Future.successful(None))
+
+      val app: Application = builder.build()
+
+      val request =
+        FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
+      val result: Future[Result] = route(app, request).value
+
+      contentAsString(result) mustBe "No employee with that id exists in records"
+
+      app.stop
+    }
+  }
 }
