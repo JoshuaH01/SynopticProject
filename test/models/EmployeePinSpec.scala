@@ -8,7 +8,7 @@ class EmployeePinSpec extends WordSpec with OptionValues with MustMatchers {
 
   "EmployeeId" must {
 
-    val validEmployeePin = "dssfd123"
+    val validEmployeePin = "1342"
 
     "Deserialise" in {
       val employeeId = EmployeePin(
@@ -28,7 +28,7 @@ class EmployeePinSpec extends WordSpec with OptionValues with MustMatchers {
       val json = Json.obj(
         "pin" -> validEmployeePin
       )
-      json.as[EmployeeId] mustEqual expectedEmployeePin
+      json.as[EmployeePin] mustEqual expectedEmployeePin
     }
 
     "return 'Invalid employee id' if id does not match regex" in {

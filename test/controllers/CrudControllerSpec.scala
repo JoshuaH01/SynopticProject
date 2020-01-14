@@ -42,22 +42,22 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
     "return ok and delete session if one already exists" in {
       when(mockEmployeeRespository.getBowsEmployeeById(any()))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testEmployeeId", "testEmail", "testMobile", employeePin, 321))))
 
       when(mockSessionRespository.getSession(any()))
-        .thenReturn(Future.successful(Some(UserSession("testId", LocalDateTime.now))))
+        .thenReturn(Future.successful(Some(UserSession("testEmployeeId", LocalDateTime.now))))
 
       when(mockSessionRespository.deleteSessionById(any()))
         .thenReturn(Future.successful(UpdateWriteResult.apply(ok = true, 1, 1, Seq.empty, Seq.empty, None, None, None)))
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(EmployeeId("testEmployeeId")).url)
 
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe OK
-      contentAsString(result) mustBe "Goodbye testName"
+      contentAsString(result) mustBe "Goodbye testEmployeeId"
 
       app.stop
     }
@@ -90,7 +90,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(EmployeeId("testEmployeeId")).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -146,8 +146,8 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         status(result) mustBe OK
         contentAsString(result) must contain
         """{
-            "_id":card,"name":testName,"email":"testEmail",
-            "mobileNumber":"testMobile"}""".stripMargin
+            "employeeId":employeeId,"name":testName,"email":"testEmail",
+            "mobileNumber":"testMobile", "pin":"employeePin" , "balance":"0"}""".stripMargin
 
 
         app.stop
@@ -336,7 +336,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe 200
-      contentAsString(result) mustBe "Success! updated Employee with id testId's name to fred"
+      contentAsString(result) mustBe "Success! updated Employee with id testEmployeeId's name to fred"
 
       app.stop
     }

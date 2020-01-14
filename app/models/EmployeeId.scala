@@ -13,7 +13,7 @@ object EmployeeId {
   implicit val pathBindable: PathBindable[EmployeeId] = {
     new PathBindable[EmployeeId] {
       override def bind(key: String, value: String): Either[String, EmployeeId] = {
-        if (value.matches("^[A-Z]{1,16}$")) {
+        if (value.matches("^[a-zA-Z0-9]{1,16}$")) {
           Right(EmployeeId(value))
         } else {
           Left("Invalid employee Id")

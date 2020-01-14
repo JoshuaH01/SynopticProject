@@ -16,7 +16,7 @@ object EmployeePin {
         if (value.matches("^[0-9]{4}$")) {
           Right(EmployeePin(value))
         } else {
-          Left("Invalid Employee Pin")
+          Left("Invalid employee Pin")
         }
       }
 
