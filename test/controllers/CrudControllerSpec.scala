@@ -2,7 +2,7 @@ package controllers
 
 import java.time.LocalDateTime
 
-import repositories.{PersonRepository, SessionRepository}
+import repositories.{BowsEmployeeRepository, SessionRepository}
 import models.{Person, PersonId, UserSession}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
@@ -26,12 +26,12 @@ import scala.concurrent.Future
 class CrudControllerSpec extends WordSpec with MustMatchers
   with MockitoSugar with ScalaFutures {
 
-  val mockPersonRespository: PersonRepository = mock[PersonRepository]
+  val mockPersonRespository: BowsEmployeeRepository = mock[BowsEmployeeRepository]
   val mockSessionRespository: SessionRepository = mock[SessionRepository]
 
   private lazy val builder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(
-      bind[PersonRepository].toInstance(mockPersonRespository),
+      bind[BowsEmployeeRepository].toInstance(mockPersonRespository),
       bind[SessionRepository].toInstance(mockSessionRespository)
     )
 

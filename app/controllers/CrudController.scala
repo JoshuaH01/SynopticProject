@@ -8,110 +8,182 @@ import play.api.Configuration
 import play.api.libs.json.{JsResultException, JsValue, Json}
 import play.api.mvc._
 import reactivemongo.core.errors.DatabaseException
-import repositories.{PersonRepository, SessionRepository}
+import repositories.{BowsEmployeeRepository, SessionRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class CrudController @Inject()(cc: ControllerComponents,
                                config: Configuration,
-                               personRepository: PersonRepository,
+                               bowsEmployeeRepository: BowsEmployeeRepository,
                                sessionRepository: SessionRepository)
                               (implicit ec: ExecutionContext) extends AbstractController(cc) {
 
 
-  def present(_id: PersonId) = Action.async {
+  def presentCard(id: EmployeeId) = Action.async {
     implicit request =>
-      personRepository.getPersonById(_id).flatMap {
-        case Some(person) =>
-          sessionRepository.getSession(_id).flatMap {
+      bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
+        case Some(bowsEmployee) =>
+          sessionRepository.getSession(id).flatMap {
             case Some(_) =>
-              sessionRepository.deleteSessionById(_id).map(_ => Ok(s"Goodbye ${person.name}"))
+              sessionRepository.deleteSessionById(id).map(_ => Ok(s"Goodbye ${bowsEmployee.name}"))
             case None =>
-              sessionRepository.createNewSession(UserSession(_id._id, LocalDateTime.now))
+              sessionRepository.createNewSession(UserSession(id.id, LocalDateTime.now))
 
 
-                .map(_ => Ok(s"Hello ${person.name}"))
+                .map(_ => Ok(s"Hello ${bowsEmployee.name}"))
 
           }
 
         case None => Future.successful(BadRequest("Please register"))
       } recoverWith {
         case _: JsResultException =>
-          Future.successful(BadRequest(s"Could not parse Json to Person model. Incorrect data!"))
+          Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
         case e =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
       }
   }
 
-  //GET
-  def getId(_id: PersonId): Action[AnyContent] = Action.async {
+
+  def getId(id: EmployeeId): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
-      personRepository.getPersonById(_id).map {
-        case None => NotFound("Person not found")
+      bowsEmployeeRepository.getBowsEmployeeById(id).map {
+        case None => NotFound("Employee not found")
         case Some(person) => Ok(Json.toJson(person))
       } recoverWith {
         case _: JsResultException =>
-          Future.successful(BadRequest(s"Could not parse Json to Person model."))
+          Future.successful(BadRequest(s"Could not parse Json to Employee model."))
         case exception =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $exception"))
       }
   }
 
-  //GET
-  def getName(_id: PersonId) = Action.async {
+
+  def getEmployeeName(id: EmployeeId) = Action.async {
     implicit request: Request[AnyContent] =>
-      personRepository.getPersonById(_id).map {
+      bowsEmployeeRepository.getBowsEmployeeById(id).map {
         case Some(person) => Ok(Json.toJson(person.name))
-        case None => NotFound("Person not found!")
+        case None => NotFound("Employee not found!")
       } recoverWith {
         case _: JsResultException =>
-          Future.successful(BadRequest(s"Could not parse Json to Persons model. Incorrect data!"))
+          Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
         case e =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
       }
   }
 
-  def addNewPerson: Action[JsValue] = Action.async(parse.json) {
+  def getEmployeePin(id: EmployeeId) = Action.async {
+    implicit request: Request[AnyContent] =>
+      bowsEmployeeRepository.getBowsEmployeeById(id).map {
+        case Some(employee) => Ok(Json.toJson(employee.pin))
+        case None => NotFound("Employee not found!")
+      } recoverWith {
+        case _: JsResultException =>
+          Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
+        case e =>
+          Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
+      }
+  }
+
+  def addNewEmployee: Action[JsValue] = Action.async(parse.json) {
     implicit request =>
       (for {
-        person <- Future.fromTry(Try {
-          request.body.as[Person]
+        employee <- Future.fromTry(Try {
+          request.body.as[BowsEmployee]
         })
-        result <- personRepository.addNewPerson(person)
+        result <- bowsEmployeeRepository.registerEmployee(employee)
       } yield Ok("Success")).recoverWith {
         case e: JsResultException =>
-          Future.successful(BadRequest(s"Could not parse Json to Person model. Incorrect data!"))
+          Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
         case e: DatabaseException =>
-          Future.successful(BadRequest(s"Could not parse Json to Person model. Duplicate key error!"))
+          Future.successful(BadRequest(s"Could not parse Json to Employee model. Duplicate key error!"))
         case e =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
       }
   }
 
-  def deletePerson(_id: PersonId) = Action.async {
+  def deleteEmployee(id: EmployeeId) = Action.async {
     implicit request =>
-      personRepository.deletePersonById(_id).map {
+      bowsEmployeeRepository.deleteEmployeeById(id).map {
         case Some(_) => Ok("Success")
-        case _ => NotFound("Person not found")
+        case _ => NotFound("Employee not found")
       } recoverWith {
         case e =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
       }
   }
 
-  //POST
-  def updateName(_id: PersonId, newData: String): Action[AnyContent] = Action.async {
+  def updateName(id: EmployeeId, newData: String): Action[AnyContent] = Action.async {
     implicit request =>
-      personRepository.updateName(_id, newData).map {
+      bowsEmployeeRepository.updateName(id, newData).map {
 
-        case Some(person) =>
-          Ok(s"Success! updated Person with id ${person._id._id}'s name to $newData")
+        case Some(employee) =>
+          Ok(s"Success! updated Employee with id ${employee.employeeId.id}'s name to $newData")
         case _ =>
-          NotFound("No Person with that id exists in records")
+          NotFound("No Employee with that id exists in records")
       } recoverWith {
         case exception =>
           Future.successful(BadRequest(s"Something has gone wrong with the following exception: $exception"))
       }
   }
+
+  def updatePin(pin: EmployeePin, newData: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      bowsEmployeeRepository.updatePin(pin, newData).map {
+
+        case Some(employee) =>
+          Ok(s"Success! updated ${employee.name}'s pin")
+        case _ =>
+          NotFound("No Employee with that id exists in records")
+      } recoverWith {
+        case exception =>
+          Future.successful(BadRequest(s"Something has gone wrong with the following exception: $exception"))
+      }
+  }
+
+  def increaseBalance(id: EmployeeId, increase: Int): Action[AnyContent] = Action.async {
+
+    bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
+      case Some(_) =>
+        increase match {
+          case x if x <= 0 => Future.successful(BadRequest("Minimum increase must be greater than zero"))
+          case _ =>
+            bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
+              case Some(_) => bowsEmployeeRepository.increaseBalance(id, increase)
+                .map { _ => Ok(s"Document updated!") }
+            }
+        }
+      case None => Future.successful(NotFound("No Employee with that id exists in records"))
+    } recoverWith {
+      case _ => Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
+      case e => Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
+
+    }
+  }
+
+  def decreaseBalance(id: EmployeeId, decrease: Int): Action[AnyContent] = Action.async {
+    bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
+      case Some(employee) => {
+        decrease match {
+          case x if x <= 0 => Future.successful(BadRequest("Minimum increase must be greater than zero"))
+          case x if x > employee.balance => Future.successful(BadRequest("Decrease cannot be greater than current balance"))
+          case _ =>
+            bowsEmployeeRepository.getBowsEmployeeById(id).flatMap {
+              case Some(employee) =>
+                bowsEmployeeRepository.decreaseBalance(id, decrease).map {
+                  case Some(_) => Ok("Document updated!")
+                  case None => NotFound("Employee not found")
+                }
+            }
+        }
+
+      }
+      case None => Future.successful(NotFound("No Employee with that id exists in records"))
+
+    }.recoverWith {
+      case _ => Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
+      case e => Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
+    }
+  }
+
 }
