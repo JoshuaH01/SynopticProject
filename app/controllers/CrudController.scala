@@ -49,7 +49,7 @@ class CrudController @Inject()(cc: ControllerComponents,
     implicit request: Request[AnyContent] =>
       bowsEmployeeRepository.getBowsEmployeeById(id).map {
         case None => NotFound("Employee not found")
-        case Some(person) => Ok(Json.toJson(person))
+        case Some(employee) => Ok(Json.toJson(employee))
       } recoverWith {
         case _: JsResultException =>
           Future.successful(BadRequest(s"Could not parse Json to Employee model."))
@@ -62,20 +62,7 @@ class CrudController @Inject()(cc: ControllerComponents,
   def getEmployeeName(id: EmployeeId) = Action.async {
     implicit request: Request[AnyContent] =>
       bowsEmployeeRepository.getBowsEmployeeById(id).map {
-        case Some(person) => Ok(Json.toJson(person.name))
-        case None => NotFound("Employee not found!")
-      } recoverWith {
-        case _: JsResultException =>
-          Future.successful(BadRequest(s"Could not parse Json to Employee model. Incorrect data!"))
-        case e =>
-          Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
-      }
-  }
-
-  def getEmployeePin(id: EmployeeId) = Action.async {
-    implicit request: Request[AnyContent] =>
-      bowsEmployeeRepository.getBowsEmployeeById(id).map {
-        case Some(employee) => Ok(Json.toJson(employee.pin))
+        case Some(employee) => Ok(Json.toJson(employee.name))
         case None => NotFound("Employee not found!")
       } recoverWith {
         case _: JsResultException =>

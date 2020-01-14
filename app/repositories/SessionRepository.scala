@@ -14,7 +14,7 @@ import reactivemongo.play.json.collection.{JSONCollection, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SessionRepository @Inject()(mongo: ReactiveMongoApi, config: Configuration,
-                                  personRepository: BowsEmployeeRepository)(implicit ec: ExecutionContext) {
+                                  employeeRepository: BowsEmployeeRepository)(implicit ec: ExecutionContext) {
 
   private val sessionCollection: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("session"))

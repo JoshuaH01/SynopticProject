@@ -3,7 +3,7 @@ package controllers
 import java.time.LocalDateTime
 
 import repositories.{BowsEmployeeRepository, SessionRepository}
-import models.{Person, PersonId, UserSession}
+import models.{BowsEmployee, EmployeeId, EmployeePin, UserSession}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.OptionValues._
@@ -26,22 +26,23 @@ import scala.concurrent.Future
 class CrudControllerSpec extends WordSpec with MustMatchers
   with MockitoSugar with ScalaFutures {
 
-  val mockPersonRespository: BowsEmployeeRepository = mock[BowsEmployeeRepository]
+  val mockEmployeeRespository: BowsEmployeeRepository = mock[BowsEmployeeRepository]
   val mockSessionRespository: SessionRepository = mock[SessionRepository]
 
   private lazy val builder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().overrides(
-      bind[BowsEmployeeRepository].toInstance(mockPersonRespository),
+      bind[BowsEmployeeRepository].toInstance(mockEmployeeRespository),
       bind[SessionRepository].toInstance(mockSessionRespository)
     )
 
-  private val personId = PersonId("testPersonId")
+  private val employeeId = EmployeeId("testEmployeeId")
+  private val employeePin = EmployeePin("1234")
 
   "present" must {
 
     "return ok and delete session if one already exists" in {
-      when(mockPersonRespository.getPersonById(any()))
-        .thenReturn(Future.successful(Some(Person(personId, "testName", "testEmail", "testMobile"))))
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
 
       when(mockSessionRespository.getSession(any()))
         .thenReturn(Future.successful(Some(UserSession("testId", LocalDateTime.now))))
@@ -51,7 +52,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.present(PersonId("testId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -62,8 +63,8 @@ class CrudControllerSpec extends WordSpec with MustMatchers
     }
 
     "return ok and create new session if none exist" in {
-      when(mockPersonRespository.getPersonById(any()))
-        .thenReturn(Future.successful(Some(Person(personId, "testName", "testEmail", "testMobile"))))
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
 
       when(mockSessionRespository.getSession(any()))
         .thenReturn(Future.successful(None))
@@ -73,7 +74,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.present(PersonId("testId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -83,13 +84,13 @@ class CrudControllerSpec extends WordSpec with MustMatchers
       app.stop
     }
 
-    "return BadRequest if person does not exist" in {
-      when(mockPersonRespository.getPersonById(any()))
+    "return BadRequest if employee does not exist" in {
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
         .thenReturn(Future.successful(None))
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.present(PersonId("testId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -100,28 +101,28 @@ class CrudControllerSpec extends WordSpec with MustMatchers
     }
 
     "return BadRequest if data in mongo is invalid" in {
-      when(mockPersonRespository.getPersonById(any()))
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
         .thenReturn(Future.failed(JsResultException(Seq.empty)))
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.present(PersonId("testId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "Could not parse Json to Person model. Incorrect data!"
+      contentAsString(result) mustBe "Could not parse Json to Employee model. Incorrect data!"
 
       app.stop
     }
 
     "return BadRequest if something else has failed" in {
-      when(mockPersonRespository.getPersonById(any()))
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
         .thenReturn(Future.failed(new Exception))
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.present(PersonId("testId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -131,14 +132,14 @@ class CrudControllerSpec extends WordSpec with MustMatchers
       app.stop
     }
 
-    "get person by ID" must {
+    "get employee by ID" must {
 
-      "return ok and person details" in {
-        when(mockPersonRespository.getPersonById(any()))
-          .thenReturn(Future.successful(Some(Person(personId, "testName", "testEmail", "testMobile"))))
+      "return ok and employee details" in {
+        when(mockEmployeeRespository.getBowsEmployeeById(any()))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
         val app: Application = builder.build()
 
-        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.getId(PersonId("testId")).url)
+        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.getId(employeeId).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -151,35 +152,35 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
         app.stop
       }
-      "return 'person' not found' when id not present with status 404" in {
-        when(mockPersonRespository.getPersonById(any()))
+      "return 'employee' not found' when id not present with status 404" in {
+        when(mockEmployeeRespository.getBowsEmployeeById(any()))
           .thenReturn(Future.successful(None))
         val app: Application = builder.build()
 
-        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.getId(PersonId("wrongId")).url)
+        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.getId(employeeId).url)
 
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe 404
-        contentAsString(result) mustBe "Person not found"
+        contentAsString(result) mustBe "Employee not found"
 
         app.stop
       }
     }
 
-    "addNewPerson" must {
+    "addNewEmployee" must {
 
       "return 'success if valid data is input" in {
 
-        when(mockPersonRespository.addNewPerson(any()))
+        when(mockEmployeeRespository.registerEmployee(any()))
           .thenReturn(Future.successful(UpdateWriteResult.apply(ok = true, 1, 1, Seq.empty, Seq.empty, None, None, None)))
 
-        val personJson: JsValue = Json.toJson(Person(personId, "test", "test", "test"))
+        val employeeJson: JsValue = Json.toJson(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))
 
         val app: Application = builder.build()
 
         val request: FakeRequest[JsValue] =
-          FakeRequest(POST, routes.CrudController.addNewPerson().url).withBody(personJson)
+          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
@@ -192,17 +193,17 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       "Return BAD_REQUEST and correct error message when invalid data is input" in {
 
-        val personJson: JsValue = Json.toJson("Invalid Json")
+        val employeeJson: JsValue = Json.toJson("Invalid Json")
 
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.addNewPerson().url).withBody(personJson)
+          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe "Could not parse Json to Person model. Incorrect data!"
+        contentAsString(result) mustBe "Could not parse Json to Employee model. Incorrect data!"
 
         app.stop
 
@@ -210,7 +211,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       "Return BAD_REQUEST and correct error message when duplicate data is input" in {
 
-        when(mockPersonRespository.addNewPerson(any()))
+        when(mockEmployeeRespository.registerEmployee(any()))
           .thenReturn(Future.failed(new DatabaseException {
             override def originalDocument: Option[BSONDocument] = None
 
@@ -219,17 +220,17 @@ class CrudControllerSpec extends WordSpec with MustMatchers
             override def message: String = "Duplicate key"
           }))
 
-        val personJson: JsValue = Json.toJson(Person(personId, "test", "test", "test"))
+        val employeeJson: JsValue = Json.toJson(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))
 
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.addNewPerson().url).withBody(personJson)
+          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe "Could not parse Json to Person model. Duplicate key error!"
+        contentAsString(result) mustBe "Could not parse Json to Employee model. Duplicate key error!"
 
         app.stop
 
@@ -237,15 +238,15 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       "Return BAD_REQUEST and correct error message for any other fault" in {
 
-        when(mockPersonRespository.addNewPerson(any()))
+        when(mockEmployeeRespository.registerEmployee(any()))
           .thenReturn(Future.failed(new Exception))
 
-        val personJson: JsValue = Json.toJson(Person(personId, "test", "test", "test"))
+        val employeeJson: JsValue = Json.toJson(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))
 
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.addNewPerson().url).withBody(personJson)
+          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
@@ -257,13 +258,13 @@ class CrudControllerSpec extends WordSpec with MustMatchers
       }
     }
 
-    "deletePerson" must {
+    "deleteEmployee" must {
 
     }
       "Return Ok and correct error message when valid data is input" in {
-        when(mockPersonRespository.deletePersonById(any()))
+        when(mockEmployeeRespository.deleteEmployeeById(any()))
           .thenReturn(Future.successful(Some(Json.obj(
-            "_id" -> personId,
+            "_id" -> employeeId,
             "name" -> "testName",
             "email" -> "testEmail",
             "mobileNumber" -> "testNumber"
@@ -272,7 +273,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request: FakeRequest[AnyContentAsEmpty.type] =
-          FakeRequest(POST, routes.CrudController.deletePerson(PersonId("testId")).url)
+          FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe OK
@@ -284,31 +285,31 @@ class CrudControllerSpec extends WordSpec with MustMatchers
     }
 
     "Return Not found and correct error message when not found data" in {
-      when(mockPersonRespository.deletePersonById(any()))
+      when(mockEmployeeRespository.deleteEmployeeById(any()))
         .thenReturn(Future.successful(None
         ))
 
       val app: Application = builder.build()
 
       val request: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest(POST, routes.CrudController.deletePerson(PersonId("testId")).url)
+        FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe NOT_FOUND
-      contentAsString(result) mustBe "Person not found"
+      contentAsString(result) mustBe "Employee not found"
 
       app.stop
     }
 
     "Return BAD_REQUEST  and throw exception" in {
 
-      when(mockPersonRespository.deletePersonById(any()))
+      when(mockEmployeeRespository.deleteEmployeeById(any()))
         .thenReturn(Future.failed(new Exception))
 
       val app: Application = builder.build()
 
       val request: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest(POST, routes.CrudController.deletePerson(PersonId("testId")).url)
+        FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe BAD_REQUEST
@@ -322,36 +323,36 @@ class CrudControllerSpec extends WordSpec with MustMatchers
     "return success and correct status" in {
 
 
-      when(mockPersonRespository.getPersonById(any))
-        .thenReturn(Future.successful(Some(Person(personId, "testName", "test", "test"))))
+      when(mockEmployeeRespository.getBowsEmployeeById(any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
 
-      when(mockPersonRespository.updateName(any, any))
-        .thenReturn(Future.successful(Some(Person(personId, "testName", "test", "test"))))
+      when(mockEmployeeRespository.updateName(any, any))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
 
       val app: Application = builder.build()
 
-      val request = FakeRequest(POST, routes.CrudController.updateName(PersonId("testName"), "fred").url)
+      val request = FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
 
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe 200
-      contentAsString(result) mustBe "Success! updated Person with id testId's name to fred"
+      contentAsString(result) mustBe "Success! updated Employee with id testId's name to fred"
 
       app.stop
     }
 
-    "return correct error message if person does not exist in data" in {
+    "return correct error message if employee does not exist in data" in {
 
-      when(mockPersonRespository.updateName(any, any))
+      when(mockEmployeeRespository.updateName(any, any))
         .thenReturn(Future.successful(None))
 
       val app: Application = builder.build()
 
       val request =
-        FakeRequest(POST, routes.CrudController.updateName(PersonId("dftgyh"), "fred").url)
+        FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
       val result: Future[Result] = route(app, request).value
 
-      contentAsString(result) mustBe "No Person with that id exists in records"
+      contentAsString(result) mustBe "No Employee with that id exists in records"
       status(result) mustBe NOT_FOUND
 
       app.stop
@@ -359,13 +360,13 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
     "return correct error message exception thrown" in {
 
-      when(mockPersonRespository.updateName(any, any))
+      when(mockEmployeeRespository.updateName(any, any))
         .thenReturn(Future.failed(new Exception))
 
       val app: Application = builder.build()
 
       val request =
-        FakeRequest(POST, routes.CrudController.updateName(PersonId("dftgyh"), "fred").url)
+        FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
       val result: Future[Result] = route(app, request).value
 
       contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"

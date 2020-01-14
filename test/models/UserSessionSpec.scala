@@ -11,18 +11,18 @@ class UserSessionSpec extends FreeSpec with MustMatchers with MongoDateTimeForma
 
   "UserSession model" - {
 
-    val id = "A1"
+    val id = "345dcfvb"
     val time = LocalDateTime.now
 
     "must serialise into JSON" in {
 
       val userSession = UserSession(
-        _id = id,
+        id = id,
         lastUpdated = time
       )
 
       val expectedJson = Json.obj(
-        "_id" -> id,
+        "id" -> id,
         "lastUpdated" -> time
       )
 
@@ -32,12 +32,12 @@ class UserSessionSpec extends FreeSpec with MustMatchers with MongoDateTimeForma
     "must deserialise from JSON" in {
 
       val json = Json.obj(
-        "_id" -> id,
+        "id" -> id,
         "lastUpdated" -> time
       )
 
       val expectedUser = UserSession(
-        _id = id,
+        id = id,
         lastUpdated = time.minusHours(0)
       )
 

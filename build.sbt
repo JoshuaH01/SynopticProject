@@ -18,4 +18,5 @@ name := "SynopticProject"
 
 routesGenerator := InjectedRoutesGenerator
 
-RoutesKeys.routesImport += "models.PersonId"
+RoutesKeys.routesImport += "models.EmployeeId"
+RoutesKeys.routesImport += "models.EmployeePin"

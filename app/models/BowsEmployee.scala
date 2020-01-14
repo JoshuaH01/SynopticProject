@@ -21,7 +21,7 @@ object BowsEmployee {
       (__ \ "email").read[String] and
       (__ \ "mobileNumber").read[String] and
       (__ \ "pin").read[EmployeePin]and
-      (__ \ "balance").read[String]
+      (__ \ "balance").read[Int]
     ) (BowsEmployee.apply _)
 
   implicit val writes: OWrites[BowsEmployee] = (
@@ -30,6 +30,6 @@ object BowsEmployee {
       (__ \ "email").write[String] and
       (__ \ "mobileNumber").write[String]and
       (__ \ "pin").write[EmployeePin]and
-      (__ \ "balance").write[String]
+      (__ \ "balance").write[Int]
     ) (unlift(BowsEmployee.unapply))
 }
