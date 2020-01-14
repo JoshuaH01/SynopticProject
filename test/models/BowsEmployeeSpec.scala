@@ -16,7 +16,7 @@ class BowsEmployeeSpec extends WordSpec with OptionValues with MustMatchers {
         "name" -> "Fred",
         "email" -> "a@b.com",
         "mobileNumber" -> "07444345",
-        "pin" -> "1234",
+        "pin" -> employeePin,
         "balance" -> 0
       )
 
@@ -47,7 +47,7 @@ class BowsEmployeeSpec extends WordSpec with OptionValues with MustMatchers {
         "name" -> "Fred",
         "email" -> "a@b.com",
         "mobileNumber" -> "07444345",
-        "pin" -> "1234",
+        "pin" -> employeePin,
         "balance" -> 0
       )
 

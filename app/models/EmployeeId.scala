@@ -16,7 +16,7 @@ object EmployeeId {
         if (value.matches("^[A-Z]{1,16}$")) {
           Right(EmployeeId(value))
         } else {
-          Left("Invalid Employee Id")
+          Left("Invalid employee Id")
         }
       }
 
