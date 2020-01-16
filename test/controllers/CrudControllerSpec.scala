@@ -131,6 +131,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       app.stop
     }
+  }
 
     "get employee by ID" must {
 
@@ -258,9 +259,24 @@ class CrudControllerSpec extends WordSpec with MustMatchers
       }
     }
 
+    "updatePin" must {
+
+      "return success and correct status" in {
+
+      }
+
+      "return correct error message if employee does not exist in data" in {
+
+      }
+
+      "return correct error message exception thrown" in {
+
+      }
+    }
+
     "deleteEmployee" must {
 
-    }
+
       "Return Ok and correct error message when valid data is input" in {
         when(mockEmployeeRespository.deleteEmployeeById(any()))
           .thenReturn(Future.successful(Some(Json.obj(
@@ -282,206 +298,209 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         app.stop
 
       }
+
+
+      "Return Not found and correct error message when not found data" in {
+        when(mockEmployeeRespository.deleteEmployeeById(any()))
+          .thenReturn(Future.successful(None
+          ))
+
+        val app: Application = builder.build()
+
+        val request: FakeRequest[AnyContentAsEmpty.type] =
+          FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
+        val result: Future[Result] = route(app, request).value
+
+        status(result) mustBe NOT_FOUND
+        contentAsString(result) mustBe "Employee not found"
+
+        app.stop
+      }
+
+      "Return BAD_REQUEST  and throw exception" in {
+
+        when(mockEmployeeRespository.deleteEmployeeById(any()))
+          .thenReturn(Future.failed(new Exception))
+
+        val app: Application = builder.build()
+
+        val request: FakeRequest[AnyContentAsEmpty.type] =
+          FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
+        val result: Future[Result] = route(app, request).value
+
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"
+
+        app.stop
+      }
     }
 
-    "Return Not found and correct error message when not found data" in {
-      when(mockEmployeeRespository.deleteEmployeeById(any()))
-        .thenReturn(Future.successful(None
-        ))
+    "updateName" must {
 
-      val app: Application = builder.build()
+      "return success and correct status" in {
 
-      val request: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
-      val result: Future[Result] = route(app, request).value
 
-      status(result) mustBe NOT_FOUND
-      contentAsString(result) mustBe "Employee not found"
+        when(mockEmployeeRespository.getBowsEmployeeById(any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
 
-      app.stop
+        when(mockEmployeeRespository.updateName(any, any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+        val app: Application = builder.build()
+
+        val request = FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+
+        val result: Future[Result] = route(app, request).value
+
+        status(result) mustBe 200
+        contentAsString(result) mustBe "Success! updated Employee with id testEmployeeId's name to fred"
+
+        app.stop
+      }
+
+      "return correct error message if employee does not exist in data" in {
+
+        when(mockEmployeeRespository.updateName(any, any))
+          .thenReturn(Future.successful(None))
+
+        val app: Application = builder.build()
+
+        val request =
+          FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+        val result: Future[Result] = route(app, request).value
+
+        contentAsString(result) mustBe "No Employee with that id exists in records"
+        status(result) mustBe NOT_FOUND
+
+        app.stop
+      }
+
+      "return correct error message exception thrown" in {
+
+        when(mockEmployeeRespository.updateName(any, any))
+          .thenReturn(Future.failed(new Exception))
+
+        val app: Application = builder.build()
+
+        val request =
+          FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+        val result: Future[Result] = route(app, request).value
+
+        contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"
+
+        app.stop
+      }
     }
 
-    "Return BAD_REQUEST  and throw exception" in {
+    "increaseBalance" must {
+      "return 'success if valid data is input" in {
 
-      when(mockEmployeeRespository.deleteEmployeeById(any()))
-        .thenReturn(Future.failed(new Exception))
+        when(mockEmployeeRespository.increaseBalance(any, any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
 
-      val app: Application = builder.build()
+        val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
-      val result: Future[Result] = route(app, request).value
+        val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 301).url)
 
-      status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"
+        val result: Future[Result] = route(app, request).value
 
-      app.stop
+        status(result) mustBe 200
+        contentAsString(result) mustBe "Balance updated!"
+
+        app.stop
+      }
+
+      "return correct error message if negative increase data is input" in {
+
+        val app: Application = builder.build()
+
+        val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), -301).url)
+
+        val result: Future[Result] = route(app, request).value
+
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe "Balance increase must be greater than zero"
+
+        app.stop
+      }
+
+      "return correct error message and status if member not found" in {
+
+        when(mockEmployeeRespository.getBowsEmployeeById(EmployeeId("testEmployeeId")))
+          .thenReturn(Future.successful(None))
+
+        val app: Application = builder.build()
+
+        val request =
+          FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 234).url)
+        val result: Future[Result] = route(app, request).value
+
+        contentAsString(result) mustBe "No employee with that id exists in records"
+
+        app.stop
+      }
     }
 
-  "updateName" must {
+    "decreaseBalance" must {
 
-    "return success and correct status" in {
+      "return 'success if valid data is input" in {
+
+        when(mockEmployeeRespository.decreaseBalance(any, any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+        when(mockEmployeeRespository.getBowsEmployeeById(any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 100))))
 
 
-      when(mockEmployeeRespository.getBowsEmployeeById(any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+        val app: Application = builder.build()
 
-      when(mockEmployeeRespository.updateName(any, any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+        val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 100).url)
 
-      val app: Application = builder.build()
+        val result: Future[Result] = route(app, request).value
 
-      val request = FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+        status(result) mustBe 200
+        contentAsString(result) mustBe "Balance updated!"
 
-      val result: Future[Result] = route(app, request).value
+        app.stop
+      }
 
-      status(result) mustBe 200
-      contentAsString(result) mustBe "Success! updated Employee with id testEmployeeId's name to fred"
+      "return correct error message if decrease is higher than balance data is input" in {
 
-      app.stop
+        when(mockEmployeeRespository.getBowsEmployeeById(any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+        when(mockEmployeeRespository.decreaseBalance(any, any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+        val app: Application = builder.build()
+
+        val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
+
+        val result: Future[Result] = route(app, request).value
+
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe "Decrease cannot be greater than current balance"
+
+        app.stop
+      }
+
+      "return correct error message and status if member not found" in {
+        when(mockEmployeeRespository.getBowsEmployeeById(any))
+          .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 234))))
+
+        when(mockEmployeeRespository.getBowsEmployeeById(EmployeeId("testEmployeeId")))
+          .thenReturn(Future.successful(None))
+
+        val app: Application = builder.build()
+
+        val request =
+          FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
+        val result: Future[Result] = route(app, request).value
+
+        contentAsString(result) mustBe "No employee with that id exists in records"
+
+        app.stop
+      }
     }
 
-    "return correct error message if employee does not exist in data" in {
-
-      when(mockEmployeeRespository.updateName(any, any))
-        .thenReturn(Future.successful(None))
-
-      val app: Application = builder.build()
-
-      val request =
-        FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
-      val result: Future[Result] = route(app, request).value
-
-      contentAsString(result) mustBe "No Employee with that id exists in records"
-      status(result) mustBe NOT_FOUND
-
-      app.stop
-    }
-
-    "return correct error message exception thrown" in {
-
-      when(mockEmployeeRespository.updateName(any, any))
-        .thenReturn(Future.failed(new Exception))
-
-      val app: Application = builder.build()
-
-      val request =
-        FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
-      val result: Future[Result] = route(app, request).value
-
-      contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"
-
-      app.stop
-    }
   }
-
-  "increaseBalance" must {
-    "return 'success if valid data is input" in {
-
-      when(mockEmployeeRespository.increaseBalance(any, any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
-
-      val app: Application = builder.build()
-
-      val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 301).url)
-
-      val result: Future[Result] = route(app, request).value
-
-      status(result) mustBe 200
-      contentAsString(result) mustBe "Balance updated!"
-
-      app.stop
-    }
-
-    "return correct error message if negative increase data is input" in {
-
-      val app: Application = builder.build()
-
-      val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), -301).url)
-
-      val result: Future[Result] = route(app, request).value
-
-      status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "Balance increase must be greater than zero"
-
-      app.stop
-    }
-
-    "return correct error message and status if member not found" in {
-
-      when(mockEmployeeRespository.getBowsEmployeeById(EmployeeId("testEmployeeId")))
-        .thenReturn(Future.successful(None))
-
-      val app: Application = builder.build()
-
-      val request =
-        FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 234).url)
-      val result: Future[Result] = route(app, request).value
-
-      contentAsString(result) mustBe "No employee with that id exists in records"
-
-      app.stop
-    }
-  }
-  "decreaseBalance" must {
-
-    "return 'success if valid data is input" in {
-
-      when(mockEmployeeRespository.decreaseBalance(any, any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
-
-      when(mockEmployeeRespository.getBowsEmployeeById(any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 100))))
-
-
-      val app: Application = builder.build()
-
-      val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 100).url)
-
-      val result: Future[Result] = route(app, request).value
-
-      status(result) mustBe 200
-      contentAsString(result) mustBe "Balance updated!"
-
-      app.stop
-    }
-
-    "return correct error message if decrease is higher than balance data is input" in {
-
-      when(mockEmployeeRespository.getBowsEmployeeById(any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
-
-      when(mockEmployeeRespository.decreaseBalance(any, any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
-
-      val app: Application = builder.build()
-
-      val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
-
-      val result: Future[Result] = route(app, request).value
-
-      status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "Decrease cannot be greater than current balance"
-
-      app.stop
-    }
-
-    "return correct error message and status if member not found" in {
-      when(mockEmployeeRespository.getBowsEmployeeById(any))
-        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 234))))
-
-      when(mockEmployeeRespository.getBowsEmployeeById(EmployeeId("testEmployeeId")))
-        .thenReturn(Future.successful(None))
-
-      val app: Application = builder.build()
-
-      val request =
-        FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
-      val result: Future[Result] = route(app, request).value
-
-      contentAsString(result) mustBe "No employee with that id exists in records"
-
-      app.stop
-    }
-  }
-}
