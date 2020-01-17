@@ -499,7 +499,7 @@ class BowsControllerSpec extends WordSpec with MustMatchers
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe NOT_FOUND
-      contentAsString(result) mustBe "Member not found!"
+      contentAsString(result) mustBe "employee not found!"
 
       app.stop
 
@@ -517,7 +517,7 @@ class BowsControllerSpec extends WordSpec with MustMatchers
       val result: Future[Result] = route(app, request).value
 
       status(result) mustBe OK
-      contentAsString(result) mustBe "123"
+      contentAsString(result) mustBe "0"
 
       app.stop
 

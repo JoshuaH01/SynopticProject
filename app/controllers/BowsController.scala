@@ -62,7 +62,7 @@ class BowsController @Inject()(cc: ControllerComponents,
     implicit request: Request[AnyContent] =>
       bowsEmployeeRepository.getBowsEmployeeById(id).map {
         case Some(member) => Ok(Json.toJson(member.balance))
-        case None => NotFound("Employee not found!")
+        case None => NotFound("employee not found!")
       } recoverWith {
         case _: JsResultException =>
           Future.successful(BadRequest(s"Could not parse Json to employee model. Incorrect data!"))
