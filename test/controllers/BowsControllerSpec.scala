@@ -484,6 +484,46 @@ class BowsControllerSpec extends WordSpec with MustMatchers
       }
     }
 
+  "getBalance" must {
+
+    "return NOT_FOUND and correct error message when invalid request input" in {
+
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
+        .thenReturn(Future.successful(None))
+
+      val app: Application = builder.build()
+
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.getBalance
+      (EmployeeId("testId")).url)
+
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe NOT_FOUND
+      contentAsString(result) mustBe "Member not found!"
+
+      app.stop
+
+    }
+    "return correct balance and status ok when correct request input" in {
+
+      when(mockEmployeeRespository.getBowsEmployeeById(any()))
+        .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+      val app: Application = builder.build()
+
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController
+        .getBalance(EmployeeId("testId")).url)
+
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe OK
+      contentAsString(result) mustBe "123"
+
+      app.stop
+
+    }
+  }
+
     "decreaseBalance" must {
 
       "return 'success if valid data is input" in {

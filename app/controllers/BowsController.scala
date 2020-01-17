@@ -58,6 +58,19 @@ class BowsController @Inject()(cc: ControllerComponents,
       }
   }
 
+  def getBalance(id: EmployeeId) = Action.async {
+    implicit request: Request[AnyContent] =>
+      bowsEmployeeRepository.getBowsEmployeeById(id).map {
+        case Some(member) => Ok(Json.toJson(member.balance))
+        case None => NotFound("Employee not found!")
+      } recoverWith {
+        case _: JsResultException =>
+          Future.successful(BadRequest(s"Could not parse Json to employee model. Incorrect data!"))
+        case e =>
+          Future.successful(BadRequest(s"Something has gone wrong with the following exception: $e"))
+      }
+  }
+
 
   def getEmployeeName(id: EmployeeId) = Action.async {
     implicit request: Request[AnyContent] =>

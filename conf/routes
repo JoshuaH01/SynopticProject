@@ -4,9 +4,11 @@ GET   /present/:id                       controllers.BowsController.presentCard(
 GET   /get-person/:id                    controllers.BowsController.getId(id:EmployeeId)
 POST  /add-new-person                    controllers.BowsController.addNewEmployee
 POST  /update-pin/:pin/:newData          controllers.BowsController.updatePin(pin:EmployeePin, newData:String)
+GET   /get-balance/:id                   controllers.BowsController.getBalance(id:EmployeeId)
+
 
 GET   /get-name/:id                      controllers.BowsController.getEmployeeName(id:EmployeeId)
 POST  /delete-person/:id                 controllers.BowsController.deleteEmployee(id:EmployeeId)
 POST  /update-name/:id/:newData          controllers.BowsController.updateName(id:EmployeeId, newData:String)
-POST  /increaseBalance/:id/:increase     controllers.BowsController.increaseBalance(id:EmployeeId, increase:Int)
-POST  /decreaseBalance/:id/:decrease     controllers.BowsController.decreaseBalance(id:EmployeeId, decrease:Int)
+POST  /increase-balance/:id/:increase     controllers.BowsController.increaseBalance(id:EmployeeId, increase:Int)
+POST  /decrease-balance/:id/:decrease     controllers.BowsController.decreaseBalance(id:EmployeeId, decrease:Int)
