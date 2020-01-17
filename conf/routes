@@ -1,12 +1,12 @@
 # Routes
 
-GET   /present/:id                       controllers.CrudController.presentCard(id:EmployeeId)
-GET   /get-person/:id                    controllers.CrudController.getId(id:EmployeeId)
-POST  /add-new-person                    controllers.CrudController.addNewEmployee
-POST  /update-pin/:pin/:newData           controllers.CrudController.updatePin(pin:EmployeePin, newData:String)
+GET   /present/:id                       controllers.BowsController.presentCard(id:EmployeeId)
+GET   /get-person/:id                    controllers.BowsController.getId(id:EmployeeId)
+POST  /add-new-person                    controllers.BowsController.addNewEmployee
+POST  /update-pin/:pin/:newData          controllers.BowsController.updatePin(pin:EmployeePin, newData:String)
 
-GET   /get-name/:id                      controllers.CrudController.getEmployeeName(id:EmployeeId)
-POST  /delete-person/:id                 controllers.CrudController.deleteEmployee(id:EmployeeId)
-POST  /update-name/:id/:newData          controllers.CrudController.updateName(id:EmployeeId, newData:String)
-POST  /increaseBalance/:id/:increase     controllers.CrudController.increaseBalance(id:EmployeeId, increase:Int)
-POST  /decreaseBalance/:id/:decrease     controllers.CrudController.decreaseBalance(id:EmployeeId, decrease:Int)
+GET   /get-name/:id                      controllers.BowsController.getEmployeeName(id:EmployeeId)
+POST  /delete-person/:id                 controllers.BowsController.deleteEmployee(id:EmployeeId)
+POST  /update-name/:id/:newData          controllers.BowsController.updateName(id:EmployeeId, newData:String)
+POST  /increaseBalance/:id/:increase     controllers.BowsController.increaseBalance(id:EmployeeId, increase:Int)
+POST  /decreaseBalance/:id/:decrease     controllers.BowsController.decreaseBalance(id:EmployeeId, decrease:Int)

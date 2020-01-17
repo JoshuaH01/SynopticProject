@@ -13,7 +13,7 @@ import repositories.{BowsEmployeeRepository, SessionRepository}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class CrudController @Inject()(cc: ControllerComponents,
+class BowsController @Inject()(cc: ControllerComponents,
                                config: Configuration,
                                bowsEmployeeRepository: BowsEmployeeRepository,
                                sessionRepository: SessionRepository)

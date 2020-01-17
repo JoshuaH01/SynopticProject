@@ -14,6 +14,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
     resolvers += Resolver.jcenterRepo
   )
 
+libraryDependencies += guice
+
 name := "SynopticProject"
 
 routesGenerator := InjectedRoutesGenerator

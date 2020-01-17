@@ -23,7 +23,7 @@ import reactivemongo.core.errors.DatabaseException
 
 import scala.concurrent.Future
 
-class CrudControllerSpec extends WordSpec with MustMatchers
+class BowsControllerSpec extends WordSpec with MustMatchers
   with MockitoSugar with ScalaFutures {
 
   val mockEmployeeRespository: BowsEmployeeRepository = mock[BowsEmployeeRepository]
@@ -52,7 +52,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(EmployeeId("testEmployeeId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.presentCard(EmployeeId("testEmployeeId")).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -74,7 +74,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -90,7 +90,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(EmployeeId("testEmployeeId")).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.presentCard(EmployeeId("testEmployeeId")).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -106,7 +106,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -122,7 +122,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       val app: Application = builder.build()
 
-      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.presentCard(employeeId).url)
+      val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.presentCard(employeeId).url)
 
       val result: Future[Result] = route(app, request).value
 
@@ -140,7 +140,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
           .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
         val app: Application = builder.build()
 
-        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.getId(employeeId).url)
+        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.getId(employeeId).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -158,7 +158,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
           .thenReturn(Future.successful(None))
         val app: Application = builder.build()
 
-        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.CrudController.getId(employeeId).url)
+        val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, routes.BowsController.getId(employeeId).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -181,7 +181,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request: FakeRequest[JsValue] =
-          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
+          FakeRequest(POST, routes.BowsController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
@@ -199,7 +199,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
+          FakeRequest(POST, routes.BowsController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
@@ -226,7 +226,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
+          FakeRequest(POST, routes.BowsController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
@@ -247,7 +247,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.addNewEmployee().url).withBody(employeeJson)
+          FakeRequest(POST, routes.BowsController.addNewEmployee().url).withBody(employeeJson)
 
         val result: Future[Result] = route(app, request).value
 
@@ -263,13 +263,56 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
       "return success and correct status" in {
 
-      }
+          when(mockEmployeeRespository.getBowsEmployeeById(any))
+            .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+          when(mockEmployeeRespository.updatePin(any, any))
+            .thenReturn(Future.successful(Some(BowsEmployee(employeeId, "testName", "testEmail", "testMobile", employeePin, 0))))
+
+          val app: Application = builder.build()
+
+          val request = FakeRequest(POST, routes.BowsController.updatePin(employeePin, "3333").url)
+
+          val result: Future[Result] = route(app, request).value
+
+          status(result) mustBe 200
+          contentAsString(result) mustBe s"Success! updated testName's pin"
+
+          app.stop
+        }
 
       "return correct error message if employee does not exist in data" in {
+
+        when(mockEmployeeRespository.updatePin(any, any))
+          .thenReturn(Future.successful(None))
+
+        val app: Application = builder.build()
+
+        val request =
+          FakeRequest(POST, routes.BowsController.updatePin(employeePin, "3333").url)
+        val result: Future[Result] = route(app, request).value
+
+        contentAsString(result) mustBe "No Employee with that id exists in records"
+        status(result) mustBe NOT_FOUND
+
+        app.stop
 
       }
 
       "return correct error message exception thrown" in {
+
+          when(mockEmployeeRespository.updatePin(any, any))
+            .thenReturn(Future.failed(new Exception))
+
+          val app: Application = builder.build()
+
+          val request =
+            FakeRequest(POST, routes.BowsController.updatePin(employeePin, "345689").url)
+          val result: Future[Result] = route(app, request).value
+
+          contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"
+
+          app.stop
 
       }
     }
@@ -289,7 +332,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request: FakeRequest[AnyContentAsEmpty.type] =
-          FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
+          FakeRequest(POST, routes.BowsController.deleteEmployee(employeeId).url)
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe OK
@@ -308,7 +351,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request: FakeRequest[AnyContentAsEmpty.type] =
-          FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
+          FakeRequest(POST, routes.BowsController.deleteEmployee(employeeId).url)
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe NOT_FOUND
@@ -325,7 +368,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request: FakeRequest[AnyContentAsEmpty.type] =
-          FakeRequest(POST, routes.CrudController.deleteEmployee(employeeId).url)
+          FakeRequest(POST, routes.BowsController.deleteEmployee(employeeId).url)
         val result: Future[Result] = route(app, request).value
 
         status(result) mustBe BAD_REQUEST
@@ -348,7 +391,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
         val app: Application = builder.build()
 
-        val request = FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+        val request = FakeRequest(POST, routes.BowsController.updateName(employeeId, "fred").url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -366,7 +409,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+          FakeRequest(POST, routes.BowsController.updateName(employeeId, "fred").url)
         val result: Future[Result] = route(app, request).value
 
         contentAsString(result) mustBe "No Employee with that id exists in records"
@@ -383,7 +426,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.updateName(employeeId, "fred").url)
+          FakeRequest(POST, routes.BowsController.updateName(employeeId, "fred").url)
         val result: Future[Result] = route(app, request).value
 
         contentAsString(result) mustBe "Something has gone wrong with the following exception: java.lang.Exception"
@@ -400,7 +443,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
         val app: Application = builder.build()
 
-        val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 301).url)
+        val request = FakeRequest(POST, routes.BowsController.increaseBalance(EmployeeId("testEmployeeId"), 301).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -414,7 +457,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
         val app: Application = builder.build()
 
-        val request = FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), -301).url)
+        val request = FakeRequest(POST, routes.BowsController.increaseBalance(EmployeeId("testEmployeeId"), -301).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -432,7 +475,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.increaseBalance(EmployeeId("testEmployeeId"), 234).url)
+          FakeRequest(POST, routes.BowsController.increaseBalance(EmployeeId("testEmployeeId"), 234).url)
         val result: Future[Result] = route(app, request).value
 
         contentAsString(result) mustBe "No employee with that id exists in records"
@@ -454,7 +497,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
         val app: Application = builder.build()
 
-        val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 100).url)
+        val request = FakeRequest(POST, routes.BowsController.decreaseBalance(EmployeeId("testEmployeeId"), 100).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -474,7 +517,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
 
         val app: Application = builder.build()
 
-        val request = FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
+        val request = FakeRequest(POST, routes.BowsController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
 
         val result: Future[Result] = route(app, request).value
 
@@ -494,7 +537,7 @@ class CrudControllerSpec extends WordSpec with MustMatchers
         val app: Application = builder.build()
 
         val request =
-          FakeRequest(POST, routes.CrudController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
+          FakeRequest(POST, routes.BowsController.decreaseBalance(EmployeeId("testEmployeeId"), 234).url)
         val result: Future[Result] = route(app, request).value
 
         contentAsString(result) mustBe "No employee with that id exists in records"
